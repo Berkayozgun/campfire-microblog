@@ -1,86 +1,70 @@
-import pymongo
+from flask import Flask, request, jsonify
+from mongoengine import connect
+from flask_bcrypt import Bcrypt
+from config import MONGODB_CONNECTION_STRING
 from models.UserModel import UserModel
-import jwt
-from datetime import datetime, timedelta
-import hashlib
 
-## mongodb bağlantı bilgileri
-MONGODB_CONNECTION_STRING = "mongodb+srv://berkayozgun:uNjNgCPGHv74gD7q@microblog-cluster.wnxotnz.mongodb.net/?retryWrites=true&w=majority"
+app = Flask(__name__)
+bcrypt = Bcrypt()
 
-# mongodb bağlantısı
-client = pymongo.MongoClient(MONGODB_CONNECTION_STRING)
-db = client["my_database"]
-
-try:
-    # bağlantı testi
-    client.admin.command("ismaster")
-except pymongo.errors.ConnectionFailure as e:
-    print(f"Bağlantı başarısız: {e}")
-    exit()
-
-db = client["my_database"]
+# mongodb bağlantısını config.py dosyasından alıyoruz ve bağlantıyı gerçekleştiriyoruz.
+db = connect("my_database", host=MONGODB_CONNECTION_STRING)
 
 
 # kayıt olma fonksiyonu
+@app.route("/register", methods=["POST"])
 def register():
-    username = input("Kullanıcı adı: ")
-    email = input("E-posta adresi: ")
-    password = input("Şifre: ")
-    name = input("Ad: ")
-    surname = input("Soyad: ")
-    birthdate = input("Doğum tarihi (YYYY-MM-DD): ")
-    gender = input("Cinsiyet (male/female): ")
-    profile_image_url = input("Profil resmi URL'si: ")
+    data = request.get_json()
+    username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+    name = data.get("name")
+    surname = data.get("surname")
+    birthdate = data.get("birthdate")
+    gender = data.get("gender")
+    profile_image_url = data.get("profile_image_url")
 
-    # kullanıcı adı kontrolü
-    existing_user = db["users"].find_one({"username": username})
+    # kullanıcı kontrolü
+    existing_user = UserModel.objects(username=username).first()
     if existing_user:
-        print("Bu kullanıcı adı zaten kullanımda.")
-    else:
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        return jsonify({"message": "Kullanıcı adı zaten alınmış."}), 400
 
-        user = UserModel(
-            username=username,
-            email=email,
-            password=hashed_password,
-            name=name,
-            surname=surname,
-            birthdate=birthdate,
-            gender=gender,
-            profile_image=profile_image_url,
-        )
-        db["users"].insert_one(user.to_dict())
-        print("Kayıt başarılı.")
+    new_user = UserModel(
+        username=username,
+        email=email,
+        name=name,
+        surname=surname,
+        birthdate=birthdate,
+        gender=gender,
+        profile_image=profile_image_url,
+    )
+    new_user.set_password(password)
+    new_user.save()
+
+    return jsonify({"message": "Kayıt başarılı."}), 201
 
 
 # giriş yapma fonksiyonu
-
-
+@app.route("/login", methods=["POST"])
 def login():
-    username = input("Kullanıcı adı: ")
-    password = input("Şifre: ")
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
 
     # kullanıcı adı ve şifre kontrolü
-    user = db["users"].find_one({"username": username})
-    if user and UserModel(**user).check_password(password):
-        user_obj = UserModel(**user)
-        token = user_obj.token
-        print("Giriş başarılı.")
-        print("jwt Token:", token)
+    user = UserModel.objects(username=username).first()
+    if user and user.check_password(password):
+        return jsonify({"message": "Giriş başarılı", "token": user.token}), 200
     else:
-        print("Kullanıcı adı veya şifre hatalı.")
+        return jsonify({"message": "Kullanıcı adı veya şifre yanlış."}), 401
 
 
-# giriş menüsü
-while True:
-    print("1. Register\n2. Login\n3. Exit")
-    choice = input("Seçiminizi yapın: ")
+@app.route("/users", methods=["GET"])
+def get_users():
+    users = UserModel.objects().all()
+    user_list = [user.to_dict() for user in users]
+    return jsonify({"users": user_list})
 
-    if choice == "1":
-        register()
-    elif choice == "2":
-        login()
-    elif choice == "3":
-        break
-    else:
-        print("Geçersiz seçenek.")
+
+if __name__ == "__main__":
+    app.run(debug=True)

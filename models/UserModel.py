@@ -1,43 +1,38 @@
-from bson import ObjectId
-import hashlib
+from mongoengine import Document, StringField
+from flask_bcrypt import Bcrypt
 import jwt
 from datetime import datetime, timedelta
+from config import SECRET_KEY
+
+bcrypt = Bcrypt()
 
 
 # kullanıcı bilgileri için model
-class UserModel(object):
-    def __init__(self, **kwargs):
-        if "_id" in kwargs:
-            self._id = kwargs["_id"]
-        else:
-            self._id = ObjectId()
+class UserModel(Document):
+    username = StringField(required=True, unique=True)
+    email = StringField(required=True, unique=True)
+    password = StringField(required=True)
+    name = StringField(required=True)
+    surname = StringField(required=True)
+    birthdate = StringField(required=True)
+    gender = StringField(required=True)
+    profile_image = StringField(required=True)
 
-        self.username = kwargs.get("username", "")
-        self.email = kwargs.get("email", "")
-        self.password = kwargs.get("password", "")
-        self.name = kwargs.get("name", "")
-        self.surname = kwargs.get("surname", "")
-        self.birthdate = kwargs.get("birthdate", "")
-        self.gender = kwargs.get("gender", "")
-        self.profile_image = kwargs.get("profile_image", "")
-
-    #
     @property
     def id(self):
-        return str(self._id)
+        return str(self.id)
 
     @property
-    # kullanıcıya özel token oluşturma
     def token(self):
         payload = {
-            "user_id": str(self._id),
+            "user_id": str(self.id),
             "exp": datetime.utcnow() + timedelta(days=1),
         }
-        return jwt.encode(payload, "your-secret-key", algorithm="HS256")
+        return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
     def to_dict(self):
         return {
-            "_id": str(self._id),
+            "_id": str(self.id),
             "username": self.username,
             "email": self.email,
             "password": self.password,
@@ -48,7 +43,8 @@ class UserModel(object):
             "profile_image": self.profile_image,
         }
 
+    def set_password(self, password):
+        self.password = bcrypt.generate_password_hash(password).decode("utf-8")
+
     def check_password(self, input_password):
-        return (
-            self.password == hashlib.sha256(input_password.encode()).hexdigest()
-        )  # şifre için hashleme işlemi yapılıyor ve karşılaştırılıyor
+        return bcrypt.check_password_hash(self.password, input_password)
