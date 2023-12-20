@@ -1,29 +1,22 @@
-from bson import ObjectId
+from mongoengine import Document, StringField, DateTimeField
+from datetime import datetime
 
 
-class PostModel(object):
-    def __init__(self, user_id, title, content, date, image):
-        self._id = ObjectId()
-        self.user_id = user_id
-        self.title = title
-        self.content = content
-        self.date = date
-        self.image = image
+class PostModel(Document):
+    author = StringField(required=True)
+    date = DateTimeField(default=datetime.utcnow)
+    title = StringField(required=True)
+    content = StringField(required=True)
 
     @property
     def id(self):
-        return self._id
-
-    @id.setter
-    def id(self, value):
-        self._id = value
+        return str(self.pk)
 
     def to_dict(self):
         return {
-            "_id": str(self.id),
-            "user_id": str(self.user_id),
+            "_id": str(self.pk),
+            "author": self.author,
+            "date": self.date.strftime("%Y-%m-%d %H:%M:%S"),
             "title": self.title,
             "content": self.content,
-            "date": self.date,
-            "image": self.image,
         }

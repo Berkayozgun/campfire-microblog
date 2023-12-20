@@ -3,6 +3,7 @@ from mongoengine import connect
 from flask_bcrypt import Bcrypt
 from config import MONGODB_CONNECTION_STRING
 from models.UserModel import UserModel
+from models.PostModel import PostModel
 
 app = Flask(__name__)
 bcrypt = Bcrypt()
@@ -59,11 +60,45 @@ def login():
         return jsonify({"message": "Kullanıcı adı veya şifre yanlış."}), 401
 
 
+# kayıtlı kullanıcıları listeleme fonksiyonu
 @app.route("/users", methods=["GET"])
 def get_users():
     users = UserModel.objects().all()
     user_list = [user.to_dict() for user in users]
     return jsonify({"users": user_list})
+
+
+# post oluşturma fonksiyonu
+@app.route("/create_post", methods=["POST"])
+def create_post():
+    data = request.get_json()
+    author = data.get("author")
+    title = data.get("title")
+    content = data.get("content")
+
+    new_post = PostModel(author=author, title=title, content=content)
+    new_post.save()
+
+    return (
+        jsonify({"message": "Post başarıyla oluşturuldu.", "post": new_post.to_dict()}),
+        201,
+    )
+
+
+# belli bir kullanıcının postlarını listeleme fonksiyonu
+@app.route("/posts", methods=["GET"])
+def get_posts():
+    posts = PostModel.objects().all()
+    post_list = [post.to_dict() for post in posts]
+    return jsonify({"posts": post_list})
+
+
+# bütün kullanıcıların postlarını listeleme fonksiyonu
+@app.route("/all_posts", methods=["GET"])
+def get_all_posts():
+    posts = PostModel.objects().all()
+    post_list = [post.to_dict() for post in posts]
+    return jsonify({"posts": post_list})
 
 
 if __name__ == "__main__":
