@@ -82,6 +82,7 @@ def login():
 
 
 # kayıtlı kullanıcıları listeleme fonksiyonu
+# kayıtlı kullanıcıları listeleme fonksiyonu
 @app.route("/users", methods=["GET"])
 def get_users():
     users = UserModel.objects().all()
