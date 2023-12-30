@@ -8,6 +8,7 @@ from flask_jwt_extended import (
     get_jwt_identity,
     verify_jwt_in_request,
     current_user,
+    unset_jwt_cookies,
 )
 from mongoengine import connect
 from flask_bcrypt import Bcrypt
@@ -25,7 +26,7 @@ app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = SECRET_KEY
 jwt = JWTManager(app)
 bcrypt = Bcrypt()
-CORS(app)
+CORS(app, supports_credentials=True)
 
 # mongodb bağlantısını gerçekleştiriyoruz.
 db = connect("my_database", host=MONGODB_CONNECTION_STRING)
@@ -76,7 +77,11 @@ def login():
     user = UserModel.objects(username=username).first()
     if user and user.check_password(password):
         access_token = create_access_token(identity=str(user.id))
-        return jsonify({"message": "Giriş başarılı", "access_token": access_token}), 200
+        return jsonify({
+            "message": "Giriş başarılı",
+            "access_token": access_token,
+            "username": user.username
+            }), 200
     else:
         return jsonify({"message": "Kullanıcı adı veya şifre yanlış."}), 401
 
@@ -95,11 +100,16 @@ def get_users():
 @jwt_required()
 def create_post():
     data = request.get_json()
-    author = get_jwt_identity()
+    author_id = get_jwt_identity()
     title = data.get("title")
     content = data.get("content")
 
-    new_post = PostModel(author=author, title=title, content=content)
+    author = UserModel.objects(id=author_id).first()
+
+    if not author:
+        return jsonify({"message": "Kullanıcı bulunamadı."}), 404
+
+    new_post = PostModel(author=author_id, title=title, content=content)
     new_post.save()
 
     return (
@@ -259,6 +269,19 @@ def vote(post_id):
     post.save()
 
     return jsonify({"message": "Oy başarıyla eklendi.", "post": post.to_dict()}), 201
+
+
+#çıkış yapma fonksiyonu
+@app.route("/logout", methods=["POST"])
+@jwt_required()
+def logout():
+
+    current_user_id = get_jwt_identity()
+    print(f"current_user_id: {current_user_id}")
+
+    response = jsonify({"message": "Çıkış başarılı."})
+    unset_jwt_cookies(response)
+    return response, 200
 
 
 if __name__ == "__main__":
