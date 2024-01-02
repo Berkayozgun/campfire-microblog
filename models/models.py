@@ -68,7 +68,7 @@ class UserModel(Document):
 
 # post modeli
 class PostModel(Document):
-    author = StringField(required=True)
+    author = ReferenceField(UserModel, required=True)
     date = DateTimeField(default=datetime.utcnow)
     title = StringField(required=True)
     content = StringField(required=True)
@@ -82,9 +82,15 @@ class PostModel(Document):
     def to_dict(self):
         comment_list = [comment.to_dict() for comment in self.comments]
 
+        author_user = self.author
+        author_username = author_user.username if author_user else "Unknown"
+
         return {
             "_id": str(self.pk),
-            "author": self.author,
+            "author": {
+                "_id": str(self.author),
+                "username": author_username,
+            },
             "date": self.date.strftime("%Y-%m-%d %H:%M:%S"),
             "title": self.title,
             "content": self.content,
