@@ -85,6 +85,14 @@ class PostModel(Document):
         author_user = self.author
         author_username = author_user.username if author_user else "Unknown"
 
+        votes_debug = []
+        for vote in self.votes:
+            try:
+                vote_dict = vote.to_dict()
+                votes_debug.append(vote_dict)
+            except Exception as e:
+                votes_debug.append({"error": str(e), "vote_object": str(vote)})
+
         return {
             "_id": str(self.pk),
             "author": {
@@ -95,7 +103,7 @@ class PostModel(Document):
             "title": self.title,
             "content": self.content,
             "comments": comment_list,
-            "votes": [vote.to_dict() for vote in self.votes] if self.votes else [],
+            "votes": votes_debug,
         }
 
 # oylama modeli
@@ -104,9 +112,12 @@ class VoteModel(Document):
     post = ReferenceField(PostModel, required=True)
     vote_type = StringField(choices=["upvote", "downvote"], required=True)
     date = DateTimeField(default=datetime.utcnow)
-
+    
     def to_dict(self):
-        return {"user": str(self.user.id),  # str(self.user.id) == self.user.user_id (property
-                "vote_type": self.vote_type,
-                "post": str(self.post.id),
-                "date": self.date.strftime("%Y-%m-%d %H:%M:%S")}
+        
+        return {
+        "user": str(self.user.id),  # str(self.user.id) == self.user.user_id (property)
+        "vote_type": self.vote_type,
+        "post": str(self.post.id),
+        "date": self.date.strftime("%Y-%m-%d %H:%M:%S")
+    }

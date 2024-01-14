@@ -1,5 +1,5 @@
 #imports
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify
 from flask_jwt_extended import (
     JWTManager,
@@ -24,14 +24,16 @@ from flask_cors import CORS
 # Bcrypt ile şifreleme yapabilmek için Bcrypt nesnesi oluşturuyoruz.
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = SECRET_KEY
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)  # 1 gün olarak ayarlandı
 jwt = JWTManager(app)
 bcrypt = Bcrypt()
-CORS(app, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # mongodb bağlantısını gerçekleştiriyoruz.
 db = connect("my_database", host=MONGODB_CONNECTION_STRING)
 
 
+    
 # kayıt olma fonksiyonu
 @app.route("/register", methods=["POST"])
 def register():
@@ -180,11 +182,11 @@ def delete_post(post_id):
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
-    print(f"identity: {identity}")
+    
 
     try:
         user_id = ObjectId(identity)
-        print(f"user_id: {user_id}")
+       
     except InvalidId:
         print("User id is not valid")
         return None
@@ -249,6 +251,12 @@ def vote(post_id):
 
     if vote_type not in ["upvote", "downvote"]:
         return jsonify({"message": "Geçersiz oy tipi."}), 400
+    
+    #ensure that post_id is a valid ObjectId
+    try:
+        post_id = ObjectId(post_id)
+    except:
+        return jsonify({"message": "Geçersiz post id."}), 400
 
     post = PostModel.objects(id=post_id).first()
 
@@ -277,7 +285,7 @@ def vote(post_id):
 def logout():
 
     current_user_id = get_jwt_identity()
-    print(f"current_user_id: {current_user_id}")
+    
 
     response = jsonify({"message": "Çıkış başarılı."})
     unset_jwt_cookies(response)
