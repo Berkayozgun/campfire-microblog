@@ -80,7 +80,10 @@ class PostModel(Document):
         return str(self.pk)
 
     def to_dict(self):
-        comment_list = [comment.to_dict() for comment in self.comments]
+        comment_list = []
+        for comment in self.comments:
+            if hasattr(comment, 'to_dict') and callable(getattr(comment, 'to_dict')):
+                comment_list.append(comment.to_dict())
 
         author_user = self.author
         author_username = author_user.username if author_user else "Unknown"
@@ -95,7 +98,7 @@ class PostModel(Document):
             "title": self.title,
             "content": self.content,
             "comments": comment_list,
-            "votes": [vote.to_dict() for vote in self.votes] if self.votes else [],
+            "votes": len(self.votes)
         }
 
 # oylama modeli
@@ -106,7 +109,9 @@ class VoteModel(Document):
     date = DateTimeField(default=datetime.utcnow)
 
     def to_dict(self):
-        return {"user": str(self.user.id),  # str(self.user.id) == self.user.user_id (property
-                "vote_type": self.vote_type,
-                "post": str(self.post.id),
-                "date": self.date.strftime("%Y-%m-%d %H:%M:%S")}
+        return {
+            "user": str(self.user.id) if self.user else None,
+            "vote_type": self.vote_type,
+            "post": str(self.post.id) if self.post else None,
+            "date": self.date.strftime("%Y-%m-%d %H:%M:%S")
+        }

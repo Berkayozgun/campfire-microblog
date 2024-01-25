@@ -228,16 +228,32 @@ def add_comment(post_id):
     return jsonify({"message": "Yorum başarıyla eklendi.", "post": post.to_dict()}), 201
 
 
+
 # bütün kullanıcıların postlarını listeleme fonksiyonu
 @app.route("/all_posts", methods=["GET"])
 def get_all_posts():
+    print("Inside get_all_posts function")  # Debug çıktısı ekle
     posts = PostModel.objects().all()
-    post_list = [post.to_dict() for post in posts]
+    print("Posts retrieved successfully")  # Debug çıktısı ekle
+    post_list = []
 
-    for post_dict in post_list:
+    for post in posts:
+        post_dict = post.to_dict()
         post_dict["_id"] = str(post_dict["_id"])
 
+        # Yorumların içindeki user alanını güncelle
+        for comment in post_dict["comments"]:
+            comment_user_id = comment["user"]
+            comment_user = UserModel.objects(id=comment_user_id).first()
+            if comment_user:
+                comment["user"] = comment_user.username
+
+        post_list.append(post_dict)
+
+    print("Posts converted to dictionary successfully")  # Debug çıktısı ekle
+
     return jsonify({"posts": post_list})
+
 
 
 # posta oy verme fonksiyonu
@@ -282,6 +298,7 @@ def logout():
     response = jsonify({"message": "Çıkış başarılı."})
     unset_jwt_cookies(response)
     return response, 200
+
 
 
 if __name__ == "__main__":
