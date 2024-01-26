@@ -17,6 +17,10 @@ Follow the steps below to set up and run the Flask backend on your local machine
    ```bash
    cd campfire_microblog-microblog.git
 
+3. Navigate to the latest upgraded branch
+   ```bash
+   git checkout feature/logout
+
 3. Install the dependencies
    ```bash
    pip install -r requirements.txt
