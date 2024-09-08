@@ -53,7 +53,7 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 #### Registration
 
-##### Endpoint: /register
+##### Endpoint: `/register`
 
 ##### Method: `POST`
 
@@ -83,7 +83,7 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 #### Login
 
-##### Endpoint: /login
+##### Endpoint: `/login`
 
 ##### Method: `POST`
 
@@ -108,9 +108,9 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 #### Get User Profile
 
-##### Endpoint: /profile
+##### Endpoint: `/profile`
 
-##### Method: GET(Requires JWT token)
+##### Method: `GET`(Requires JWT token)
 
 ###### Response:
 
@@ -125,9 +125,9 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 #### Create Post
 
-##### Endpoint: /create_post
+##### Endpoint: `/create_post`
 
-##### Method: POST(Requires JWT token)
+##### Method: `POST`(Requires JWT token)
 
 ###### Body:
 
@@ -152,9 +152,9 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 #### Get User Posts
 
-##### Endpoint: /user_posts
+##### Endpoint: `/user_posts`
 
-##### Method: GET(Requires JWT token)
+##### Method: `GET`(Requires JWT token)
 
 ###### Response:
 
@@ -171,9 +171,9 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 #### Get All Posts
 
-###### Endpoint: /all_posts
+##### Endpoint: `/all_posts`
 
-###### Method: GET
+##### Method: `GET`
 
 ###### Response:
 
@@ -190,9 +190,9 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 #### Comment on Post
 
-###### Endpoint: /add_comment/<post_id>
+##### Endpoint: `/add_comment/<post_id>`
 
-###### Method: POST(Requires JWT token)
+##### Method: `POST`(Requires JWT token)
 
 ###### Body:
 
@@ -221,9 +221,9 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 #### Vote on a Post
 
-###### Endpoint: /vote/<post_id>
+##### Endpoint: `/vote/<post_id>``
 
-###### Method: POST(Requires JWT token)
+##### Method: `POST`(Requires JWT token)
 
 ###### Body:
 
@@ -252,9 +252,9 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 ## Get Post by ID
 
-###### Endpoint: /posts/<post_id>
+##### Endpoint: `/posts/<post_id>``
 
-###### Method: GET
+##### Method: `GET`
 
 ###### Response:
 
@@ -269,9 +269,9 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 ## Delete Post
 
-###### Endpoint: /post/<post_id>
+##### Endpoint: `/post/<post_id>``
 
-###### Method: DELETE(Requires JWT token)
+##### Method: `DELETE`(Requires JWT token)
 
 ###### Response:
 
@@ -283,9 +283,9 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 ## Logout
 
-###### Endpoint: /logout
+##### Endpoint: `/logout`
 
-###### Method: POST(Requires JWT token)
+##### Method: `POST`(Requires JWT token)
 
 ###### Response:
 
@@ -295,7 +295,7 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 }
 ```
 
-### Models
+# Models
 
 ## UserModel
 
