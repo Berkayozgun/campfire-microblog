@@ -221,7 +221,7 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 #### Vote on a Post
 
-##### Endpoint: `/vote/<post_id>``
+##### Endpoint: `/vote/<post_id>`
 
 ##### Method: `POST`(Requires JWT token)
 
@@ -252,7 +252,7 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 ## Get Post by ID
 
-##### Endpoint: `/posts/<post_id>``
+##### Endpoint: `/posts/<post_id>`
 
 ##### Method: `GET`
 
@@ -269,7 +269,7 @@ Make sure you have a MongoDB instance running and update the MONGODB_CONNECTION_
 
 ## Delete Post
 
-##### Endpoint: `/post/<post_id>``
+##### Endpoint: `/post/<post_id>`
 
 ##### Method: `DELETE`(Requires JWT token)
 
